@@ -1,0 +1,2 @@
+C:\Users\MManto\Documents\IceCreamGame\obj\Debug\Assembly-CSharp.csprojResolveAssemblyReference.cache
+C:\Users\MManto\Documents\IceCreamGame\obj\Debug\Assembly-CSharp.csproj.CoreCompileInputs.cache
