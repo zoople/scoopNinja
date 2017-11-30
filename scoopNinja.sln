@@ -1,0 +1,23 @@
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2008
+
+Project("{7AA5E0D3-17BF-8534-6B56-F161384659BB}") = "scoopNinja", "Assembly-CSharp.csproj", "{B138025C-7E24-4711-2A23-62DC3685F93C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B138025C-7E24-4711-2A23-62DC3685F93C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B138025C-7E24-4711-2A23-62DC3685F93C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B138025C-7E24-4711-2A23-62DC3685F93C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B138025C-7E24-4711-2A23-62DC3685F93C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = Assembly-CSharp.csproj
+	EndGlobalSection
+EndGlobal

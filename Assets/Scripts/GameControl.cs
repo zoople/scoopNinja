@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class GameControl : MonoBehaviour {
 
@@ -8,9 +9,10 @@ public class GameControl : MonoBehaviour {
 
     private float[] conePos = { -2.1f, 0, 2.1f };
     private float[] levels = { -2.0f, -1.5f, -1.0f, -0.5f, 0.0f, 0.5f };
-    private int[,] coneLayout = new int[3,5];
+    private int[,] coneLayoutData = new int[3,5];
     private int[] scoopStackSize = new int[3];
-
+    private Stack<GameObject>[] coneLayout = new Stack<GameObject>[3]; 
+    
 
     // private IceCream[] ConeA;
     // Use this for initialization
@@ -18,15 +20,20 @@ public class GameControl : MonoBehaviour {
 
         parseOrder(GetNextOrder());
 
-       // Debug.Log("Ready to show");
+        coneLayout[0] = new Stack<GameObject>();
+        coneLayout[1] = new Stack<GameObject>();
+        coneLayout[2] = new Stack<GameObject>();
+
+
+        // Debug.Log("Ready to show");
         for (int c = 0; c<3; c++)
         {
             //Debug.Log("Cone " + c.ToString());
             for (int s = 0; s< scoopStackSize[c]; s++)
             {
                 GameObject scoop = Instantiate(iceCreamScoop, new Vector3(conePos[c], levels[s],-s), Quaternion.identity) as GameObject;  //create sorting layers (no need to because can just set Z when move)
-                scoop.GetComponent<IceCream>().setFlavour("F"+coneLayout[c,s]);
-               // Debug.Log(coneLayout[c, s]);
+                scoop.GetComponent<IceCream>().setFlavour("F"+coneLayoutData[c,s]);
+                coneLayout[s].Push(scoop);
             }
          
 
@@ -36,7 +43,21 @@ public class GameControl : MonoBehaviour {
     
 
     }
-	
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        Debug.Log("Test2");
+    }
+
+    private void OnMouseEnter()
+    {
+        Debug.Log("Mouse over");
+    }
+    void OnMouseDown ()
+    {
+        Debug.Log("Test");
+    }
+
 	// Update is called once per frame
 	void Update () {
 	
@@ -62,7 +83,7 @@ public class GameControl : MonoBehaviour {
             for (int s = 0; s < scoopDetails[c].Length; s++)
             {
                // Debug.Log(scoopDetails[c][s]);
-                coneLayout[c,s] = int.Parse(scoopDetails[c][s]);
+                coneLayoutData[c,s] = int.Parse(scoopDetails[c][s]);
             }
             
         }
