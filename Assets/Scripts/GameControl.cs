@@ -34,6 +34,17 @@ public class GameControl : MonoBehaviour {
                 GameObject scoop = Instantiate(iceCreamScoop, new Vector3(conePos[c], levels[s],-s), Quaternion.identity) as GameObject;  //create sorting layers (no need to because can just set Z when move)
                 scoop.GetComponent<IceCream>().setFlavour("F"+coneLayoutData[c,s]);
                 coneLayout[s].Push(scoop);
+
+                //For the top scoop
+                if (s == scoopStackSize[c] - 1)
+                {
+                    scoop.GetComponent<IceCream>().isTop = true;
+                }
+                //Otherwise
+                else
+                {
+                    scoop.GetComponent<IceCream>().isTop = false;
+                }
             }
          
 
@@ -44,19 +55,8 @@ public class GameControl : MonoBehaviour {
 
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        Debug.Log("Test2");
-    }
 
-    private void OnMouseEnter()
-    {
-        Debug.Log("Mouse over");
-    }
-    void OnMouseDown ()
-    {
-        Debug.Log("Test");
-    }
+
 
 	// Update is called once per frame
 	void Update () {

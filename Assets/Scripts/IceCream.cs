@@ -11,7 +11,7 @@ public class IceCream : MonoBehaviour {
     public Sprite F5;
 
     public string flavour;
-
+    public bool isTop;
 
 
     // Use this for initialization
@@ -27,6 +27,13 @@ public class IceCream : MonoBehaviour {
 	void Update () {
 	
 	}
+
+    private void OnMouseDown()
+    {
+        if (isTop)         Debug.Log("Ice Cream: " + gameObject.transform.position.y);
+        else Debug.Log("You cant click this one: " + gameObject.transform.position.y);
+
+    }
 
     public void setFlavour(string newFlavour)
     {
