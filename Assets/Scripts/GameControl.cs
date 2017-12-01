@@ -5,6 +5,8 @@ using System.Collections.Generic;
 public class GameControl : MonoBehaviour {
 
     public GameObject iceCreamScoop;
+    public GameObject iceCreamCone;
+
 
 
     private float[] conePos = { -2.1f, 0, 2.1f };
@@ -26,12 +28,16 @@ public class GameControl : MonoBehaviour {
 
 
         // Debug.Log("Ready to show");
+
+        //Load the Ice Creams
         for (int c = 0; c<3; c++)
         {
+            GameObject cone = Instantiate(iceCreamCone, new Vector3(conePos[c], -3.61f, 1), Quaternion.identity) as GameObject;
+
             //Debug.Log("Cone " + c.ToString());
             for (int s = 0; s< scoopStackSize[c]; s++)
             {
-                GameObject scoop = Instantiate(iceCreamScoop, new Vector3(conePos[c], levels[s],-s), Quaternion.identity) as GameObject;  //create sorting layers (no need to because can just set Z when move)
+                GameObject scoop = Instantiate(iceCreamScoop, new Vector3(conePos[c], levels[s],-s), Quaternion.identity) as GameObject; 
                 scoop.GetComponent<IceCream>().setFlavour("F"+coneLayoutData[c,s]);
                 coneLayout[s].Push(scoop);
 
@@ -48,13 +54,14 @@ public class GameControl : MonoBehaviour {
             }
          
 
-        }
-       
-      
-    
+        }   
 
     }
 
+    void DisplayIceCreams(float[] conePos, float[] levels, Stack<GameObject>[] layout)
+    {
+
+    }
 
 
 
