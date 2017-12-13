@@ -1,10 +1,16 @@
 fileFormatVersion: 2
 guid: 34fc0e28a97943a4786bf6ca44f500f9
-timeCreated: 1511540036
-licenseType: Pro
+timeCreated: 1513025177
+licenseType: Free
 MonoImporter:
+  externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - iceCreamScoop: {fileID: 198728, guid: b48a0b843fb95244d8e44532c9a3266a, type: 2}
+  - iceCreamCone: {fileID: 133390, guid: 2b980f19c14654b4082d52e897a97f3f, type: 2}
+  - limitLine: {instanceID: 0}
+  - winCelebration: {instanceID: 0}
+  - selectedScoop: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

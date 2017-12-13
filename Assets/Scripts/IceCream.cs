@@ -13,6 +13,14 @@ public class IceCream : MonoBehaviour {
     public string flavour;
     public bool isTop;
 
+    public int coneLocation;
+    private int newConeLocation;
+
+    private Vector3 screenPoint;
+    private Vector3 offset;
+    private float distanceTravelled;
+
+
 
     // Use this for initialization
     void Awake () {
@@ -20,6 +28,7 @@ public class IceCream : MonoBehaviour {
         flavourSprite = GetComponent<SpriteRenderer>();
         flavour = "F1";
         flavourSprite.sprite = F1;
+        isTop = false;
        
 	}
 	
@@ -30,9 +39,51 @@ public class IceCream : MonoBehaviour {
 
     private void OnMouseDown()
     {
-        if (isTop)         Debug.Log("Ice Cream: " + gameObject.transform.position.y);
-        else Debug.Log("You cant click this one: " + gameObject.transform.position.y);
 
+
+        if (isTop)
+        {
+           // Debug.Log("Ice Cream: " + gameObject.transform.position.y);
+            screenPoint = Camera.main.WorldToScreenPoint(gameObject.transform.position);
+            offset = gameObject.transform.position - Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, screenPoint.z));
+
+        }
+       // else Debug.Log("You cant click this one: " + gameObject.transform.position.y);
+
+    }
+
+    void OnMouseDrag()
+    {
+        if (isTop)
+        { 
+
+        Vector3 curScreenPoint = new Vector3(Input.mousePosition.x, Input.mousePosition.y, screenPoint.z);
+
+        Vector3 curPosition = Camera.main.ScreenToWorldPoint(curScreenPoint) + offset;
+            curPosition.z = -6f;
+
+        transform.position = curPosition;
+        
+        //distanceTravelled = Vector3.Distance(curScreenPoint, screenPoint);
+        }
+    }
+
+    private void OnMouseUp()
+    {
+        if (isTop)
+        {
+
+            //Pysiclly move the cone
+            int scoopNumber = GameControl.instance.coneLayout[newConeLocation].Count;
+            if (coneLocation == newConeLocation) scoopNumber--;
+            transform.position = new Vector3(GameControl.instance.conePos[newConeLocation], GameControl.instance.levels[scoopNumber], GameControl.instance.zlayer[scoopNumber]);
+
+            //Logiclly move the cone
+            GameControl.instance.moveCone(coneLocation, newConeLocation, false);
+            coneLocation = newConeLocation; //update my record of it
+            
+
+        }
     }
 
     public void setFlavour(string newFlavour)
@@ -53,5 +104,14 @@ public class IceCream : MonoBehaviour {
 
         }
      
+    }
+
+    void OnTriggerEnter2D(Collider2D col)
+    {
+        //snapToX = col.transform.position.x;
+        //snapToY = col.transform.position.y;
+        newConeLocation = col.GetComponent<ConeSelect>().coneNumber;
+        //Debug.Log(newConeLocation);
+
     }
 }

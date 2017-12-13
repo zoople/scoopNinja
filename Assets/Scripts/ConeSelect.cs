@@ -3,6 +3,7 @@ using System.Collections;
 
 public class ConeSelect : MonoBehaviour
 {
+    public int coneNumber;
 
     // Use this for initialization
     void Start()
@@ -17,8 +18,5 @@ public class ConeSelect : MonoBehaviour
     }
 
 
-    void OnMouseDown()
-    {
-        Debug.Log("Test");
-    }
+    
 }
