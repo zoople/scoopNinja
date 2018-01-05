@@ -15,7 +15,7 @@ public class GameControl : MonoBehaviour {
     public GameObject selectedScoop;
 
     //Load settings
-    public float[] conePos = { -2.1f, 0, 2.1f, -3.61f };
+    public float[] conePos = { -1f, 0, 1f, -3.61f };
     // public float[] levels = { -2.0f, -1.5f, -1.0f, -0.5f, 0.0f, 0.5f };
     // public float[] zlayer = { -1f, -2f, -3f, -4f, -5f };
     public float[] levels;
@@ -27,7 +27,7 @@ public class GameControl : MonoBehaviour {
     private float orderScale_scoop = 0.65f;
 
     public int maxHeight;
-    private float[] maxHeightY = { -2.0f, -1.5f, -1.0f, -0.5f, 0.0f, 0.5f };
+    private float[] maxHeightY = { -2.0f, -1.5f, -1.0f, -0.5f, 0.0f, 0.5f, 1f };
 
 
     private Stack<int>[] coneLayoutData = new Stack<int>[3];
@@ -56,6 +56,8 @@ public class GameControl : MonoBehaviour {
     // Use this for initialization
     void Start () {
 
+        string order;
+
         //Initialise the staks
         for (int i=0; i<3; i++)
         {
@@ -63,20 +65,24 @@ public class GameControl : MonoBehaviour {
             coneLayout_order[i] = new Stack<GameObject>();
             coneLayoutData[i] = new Stack<int>();
             coneLayoutData_order[i] = new Stack<int>();
+            conePos[i] = -1.9f + 1.9f * i;
         }
 
+        order = GetNextOrder();
         //Load the Ice Creams
-        parseOrder(GetNextOrder(), coneLayoutData);       
+        parseOrder(order, coneLayoutData);       
         LoadIceCreams(conePos, levels, coneLayout, coneLayoutData, 1, 1);
 
         //Load the order
-        parseOrder(GetNextOrder(), coneLayoutData_order);      
+        parseOrder(order, coneLayoutData_order);      
         LoadIceCreams(conePos_orders, levels_orders, coneLayout_order, coneLayoutData_order, orderScale_scoop, orderScale_cone);
 
-        //Set the limitline
-        limitLine.transform.position = new Vector2(0, maxHeightY[maxHeight]);
+       
 
-        shuffleOrder();
+        while (checkOrder()) shuffleOrder();
+
+        //Set the limitline
+        limitLine.transform.position = new Vector2(0, maxHeightY[maxHeight + 1] - 0.1f);
 
         showIceCreams();
 
@@ -86,13 +92,65 @@ public class GameControl : MonoBehaviour {
     {
         // layout[2].Push(layout[0].Pop());
         // moveCone(0, 1, true);
+  
+        int hardMax = -1;
+        int currentMax = 0;
 
-        moveOrder(0, 1);
-        moveOrder(0, 2);
-        moveOrder(1, 0);
-       moveOrder(2, 1);
-       moveOrder(2, 0);
-       moveOrder(1, 2);
+        for (int i=0; i<3; i++) if (coneLayout[i].Count>currentMax) currentMax = coneLayout[i].Count;
+       // Debug.Log("The maximum height is " + currentMax);
+       hardMax = currentMax + Random.Range(0, 2);
+        
+        int lastFrom = -1;
+        int lastTo = -2;
+        int from = -1;
+        int to = -2;
+
+        int numMoves = 10;
+           
+        bool validMove = false;
+        int attempts = 0;
+        string reason;
+
+        for (int m = 0; m <numMoves; m++)
+        {
+            validMove = false;
+            attempts = 0;
+
+            while (!validMove)
+            {
+                from = Random.Range(0, 3);
+                to = Random.Range(0, 3);
+           
+                validMove = true;
+                reason = " fuck knows! ";
+                if (from == to) { validMove = false; reason = " from=to"; } //cant move to the same place
+                if (coneLayout_order[from].Count == 0) { validMove = false; reason = " cone empty"; }//cant move if there is nothing there
+                if (coneLayout_order[to].Count >= hardMax) { validMove = false; reason = " cone full"; } //cant move if it is going to make it go over the max
+                if (from == lastTo) { validMove = false; reason = " that was the last one"; }  //you cant pick a scoop that you put down last time
+                attempts++;
+                if (attempts > 200) validMove = true;
+                Debug.Log("attempt "+from + "," + to+" "+validMove+reason);
+            }
+            if (attempts < 100)
+            {
+                moveOrder(from, to);
+                lastFrom = from;
+                lastTo = to;
+                Debug.Log("***************************** " + from + "," + to);
+                // Debug.Log("Cone " + to + " is now " + coneLayout_order[to].Count);
+                if (coneLayout_order[to].Count > currentMax) currentMax = coneLayout_order[to].Count;
+            }
+            else Debug.Log("........................failed move");
+
+        }
+        
+       //Debug.Log("The maximum height was " + currentMax); //moveOrder(0, 1);
+                              // moveOrder(0, 2);
+                              //moveOrder(1, 0);
+                              // moveOrder(2, 1);
+                              //   moveOrder(2, 0);
+                              //moveOrder(1, 2);
+        maxHeight = currentMax;
 
 
 
@@ -137,7 +195,7 @@ public class GameControl : MonoBehaviour {
 
     public void moveCone(int from, int to, bool willDoPhysicalMove)
     {
-        GameObject temp;
+        
 
   
         if (coneLayout[to].Count > 0)
@@ -265,7 +323,20 @@ public class GameControl : MonoBehaviour {
 
     string GetNextOrder()
     {
-       // Debug.Log("Getting next order");
-        return "5,3,4;3,2;4";  // deal with empty
+        // Debug.Log("Getting next order");
+        string[] orders =
+         new string[]
+         {
+            "5,3,4,2;3,2;4",
+            "1,3;4,5,2;4",
+            "4,5;3,2;4,5",
+
+         };
+
+
+        int order = Random.Range(0, 3);
+        return orders[order]; 
+
+
     }
 }

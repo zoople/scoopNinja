@@ -54,13 +54,24 @@ public class IceCream : MonoBehaviour {
 
     void OnMouseDrag()
     {
+        float buffer = 0.5f;
         if (isTop)
         { 
 
         Vector3 curScreenPoint = new Vector3(Input.mousePosition.x, Input.mousePosition.y, screenPoint.z);
 
-        Vector3 curPosition = Camera.main.ScreenToWorldPoint(curScreenPoint) + offset;
-            curPosition.z = -6f;
+             // Debug.Log("Mouse: "+Camera.main.ScreenToWorldPoint(curScreenPoint).y);
+            //  Debug.Log("LImit: " +GameControl.instance.limitLine.transform.position.y);
+            Vector3 curPosition = Camera.main.ScreenToWorldPoint(curScreenPoint) + offset;
+
+            if (Camera.main.ScreenToWorldPoint(curScreenPoint).y > (GameControl.instance.limitLine.transform.position.y - buffer)) 
+
+            curPosition.y = GameControl.instance.limitLine.transform.position.y - buffer;
+
+
+            curPosition.z = -6f; //bring it in front while dragging
+
+
 
         transform.position = curPosition;
         
@@ -72,16 +83,27 @@ public class IceCream : MonoBehaviour {
     {
         if (isTop)
         {
+            if (newConeLocation == coneLocation) // if you tried to move it somewhere full
+            {
+                //Pysiclly move the cone
+                int scoopNumber = GameControl.instance.coneLayout[newConeLocation].Count;
+                if (coneLocation == newConeLocation) scoopNumber--;
+                transform.position = new Vector3(GameControl.instance.conePos[newConeLocation], GameControl.instance.levels[scoopNumber], GameControl.instance.zlayer[scoopNumber]);
 
-            //Pysiclly move the cone
-            int scoopNumber = GameControl.instance.coneLayout[newConeLocation].Count;
-            if (coneLocation == newConeLocation) scoopNumber--;
-            transform.position = new Vector3(GameControl.instance.conePos[newConeLocation], GameControl.instance.levels[scoopNumber], GameControl.instance.zlayer[scoopNumber]);
+            }
+            else
+            {
 
-            //Logiclly move the cone
-            GameControl.instance.moveCone(coneLocation, newConeLocation, false);
-            coneLocation = newConeLocation; //update my record of it
-            
+
+                //Pysiclly move the cone
+                int scoopNumber = GameControl.instance.coneLayout[newConeLocation].Count;
+                if (coneLocation == newConeLocation) scoopNumber--;
+                transform.position = new Vector3(GameControl.instance.conePos[newConeLocation], GameControl.instance.levels[scoopNumber], GameControl.instance.zlayer[scoopNumber]);
+
+                //Logiclly move the cone
+                GameControl.instance.moveCone(coneLocation, newConeLocation, false);
+                coneLocation = newConeLocation; //update my record of it
+            }
 
         }
     }
@@ -110,7 +132,10 @@ public class IceCream : MonoBehaviour {
     {
         //snapToX = col.transform.position.x;
         //snapToY = col.transform.position.y;
+       
         newConeLocation = col.GetComponent<ConeSelect>().coneNumber;
+        if (GameControl.instance.coneLayout[newConeLocation].Count == GameControl.instance.maxHeight)
+            newConeLocation =coneLocation;
         //Debug.Log(newConeLocation);
 
     }
