@@ -1,18 +1,43 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 public class GameControl : MonoBehaviour {
 
+    //Singleton
+    public static GameControl instance;
+
+    //Linking
     public GameObject iceCreamScoop;
     public GameObject iceCreamCone;
     public GameObject limitLine;
+    public GameObject timeBar;
+    public GameObject timeBarHolder;
+    public GameObject orderboard;
+    public GameObject displayText;
+    public GameObject levelCompleteCelebration;
+    public GameObject orderCompleteCelebration;
+    public GameObject gameOverAlert;
+
+    //For levels with time
+    private float amtTimeLeft;
+    private float maxtime;
+    private float timerGraphicFullScale;
+    bool isTimerActive;
+
+    //For levels with move limit
+    private int maxMoves;
+    private int numMovesLeft;
+    bool isMoveLimitActive;
+
+    private Stack<GameObject> coneCollection = new Stack<GameObject>();
+
+    //To help control the level
     public bool isGameOver;
-
-    public GameObject winCelebration;
-
-    public static GameControl instance;
-    public GameObject selectedScoop;
+    public bool isOrderComplete;
+    public bool isLevelComplete;
+    private int numOrdersComplete;
 
     //Load settings
     public float[] conePos = { -1f, 0, 1f, -3.61f };
@@ -21,11 +46,21 @@ public class GameControl : MonoBehaviour {
     public float[] levels;
     public float[] zlayer;
 
-    public float[] conePos_orders = { -1.33f, 0, 1.33f, 2.65f};
-    public float[] levels_orders = { 3.69f, 3.99f, 4.29f, 4.59f, 4.89f, 5.39f };
+    //Order display parameters
+    private float[] conePos_orders = { -1.25f, 0, 1.25f, 2.3f };  //The cone X positions. [3] is the Y position
+    private static float level_order_delta = 0.30f;
+    private static float level_order_base = 3.35f;
+    private float[] levels_orders = { level_order_base,
+                                      level_order_base + level_order_delta,
+                                      level_order_base + level_order_delta*2,
+                                      level_order_base + level_order_delta*3,
+                                      level_order_base + level_order_delta*4,
+                                      level_order_base + level_order_delta*5,
+    };
     private float orderScale_cone = 0.65f;
     private float orderScale_scoop = 0.65f;
 
+    //Display paramaters and control for the limit line
     public int maxHeight;
     private float[] maxHeightY = { -2.0f, -1.5f, -1.0f, -0.5f, 0.0f, 0.5f, 1f };
 
@@ -45,18 +80,75 @@ public class GameControl : MonoBehaviour {
         for (int i = 0; i < 5; i++)
         {
             zlayer[i] = -i-1;
-            levels[i] = -2.0f + i * 0.5f;
+            levels[i] = -2.5f + i * 0.5f;
         }
         maxHeight = 4;
+
         isGameOver = false;
-        winCelebration.SetActive(false);
+        isLevelComplete = false;
+        isOrderComplete = false;
+        levelCompleteCelebration.SetActive(false);
+        numOrdersComplete = 0;
     }
 
-    // private IceCream[] ConeA;
-    // Use this for initialization
+
+    public void nextOrder()
+    {
+        orderCompleteCelebration.SetActive(false);
+
+        Debug.Log("Loading the next order");
+
+        foreach (GameObject test in coneCollection)
+        {
+            Destroy(test);
+        }
+
+        for (int i = 0; i< 3; i++)
+        {
+            coneLayoutData[i].Clear();
+            coneLayoutData_order[i].Clear();
+            Debug.Log("Cleared the data from cone "+i);
+
+            if (coneLayout[i].Count > 0)
+            {
+                foreach (GameObject test in coneLayout[i])
+                {
+                    Destroy(test);
+                }
+                coneLayout[i].Clear();
+            }
+
+      
+            if (coneLayout_order[i].Count > 0)
+            {
+                foreach (GameObject test in coneLayout_order[i])
+                {
+                    Destroy(test);
+                }
+                coneLayout_order[i].Clear();
+            }
+            
+
+
+            Debug.Log("Cleared the objects from cone " + i);
+
+            maxHeight = 0;
+            
+        }
+
+        //levelCompleteCelebration.SetActive(false);
+        //levelCompleteCelebration.GetComponent<SpriteRenderer>().enabled = false;
+        //isGameOver = false;
+        isOrderComplete = false;
+    
+        setupPuzzle();
+
+    }
+  
+
     void Start () {
 
-        string order;
+        timerGraphicFullScale = timeBar.transform.localScale.x;
 
         //Initialise the staks
         for (int i=0; i<3; i++)
@@ -68,26 +160,51 @@ public class GameControl : MonoBehaviour {
             conePos[i] = -1.9f + 1.9f * i;
         }
 
+    
+
+        setupPuzzle();
+
+    }
+    
+    void setupPuzzle()
+    {
+        string order;
+
+        displayText.GetComponent<Text>().text = numOrdersComplete.ToString();
+   
+            
         order = GetNextOrder();
         //Load the Ice Creams
-        parseOrder(order, coneLayoutData);       
+        parseOrder(order, coneLayoutData);
         LoadIceCreams(conePos, levels, coneLayout, coneLayoutData, 1, 1);
 
         //Load the order
-        parseOrder(order, coneLayoutData_order);      
+        parseOrder(order, coneLayoutData_order);
         LoadIceCreams(conePos_orders, levels_orders, coneLayout_order, coneLayoutData_order, orderScale_scoop, orderScale_cone);
 
-       
+
 
         while (checkOrder()) shuffleOrder();
 
         //Set the limitline
-        limitLine.transform.position = new Vector2(0, maxHeightY[maxHeight + 1] - 0.1f);
+        limitLine.transform.position = new Vector2(0, maxHeightY[maxHeight + 1] - 0.5f);
 
         showIceCreams();
 
+        if (numOrdersComplete == 3)        orderboard.transform.RotateAround(new Vector3(orderboard.transform.position.x, orderboard.transform.position.y, orderboard.transform.position.z), new Vector3(0, 0, 1), 90);
+
+        // Rotate(0, 0, 90);
+        isTimerActive = false;
+        isMoveLimitActive = false;
+
+        if (numOrdersComplete == 2)
+        {
+            isTimerActive = true;
+            maxtime = 20;
+            amtTimeLeft = maxtime;
+        } 
     }
-    
+
     void shuffleOrder()
     {
         // layout[2].Push(layout[0].Pop());
@@ -105,7 +222,7 @@ public class GameControl : MonoBehaviour {
         int from = -1;
         int to = -2;
 
-        int numMoves = 10;
+        int numMoves = 1;
            
         bool validMove = false;
         int attempts = 0;
@@ -211,12 +328,25 @@ public class GameControl : MonoBehaviour {
 
         if (checkOrder())
         {
-            winCelebration.SetActive(true);
+            //levelCompleteCelebration.SetActive(true);
+            //levelCompleteCelebration.GetComponent<SpriteRenderer>().enabled = true;
 
-            winCelebration.GetComponent<SpriteRenderer>().enabled = true;
+            //isGameOver = true;
+            isOrderComplete = true;
+
+            numOrdersComplete++;
+
+            if (numOrdersComplete < 5)
+            {
+                orderCompleteCelebration.SetActive(true);
+            }
+            else
+            {
+                isLevelComplete = true;
+
+                levelCompleteCelebration.SetActive(true);
+            }
             
-            isGameOver = true;
-
         }
 
 
@@ -254,7 +384,9 @@ public class GameControl : MonoBehaviour {
             GameObject cone = Instantiate(iceCreamCone, new Vector3(conePos[c], conePos[3], 5), Quaternion.identity) as GameObject;
             cone.transform.localScale = new Vector2(cone.transform.localScale.x * coneScale, cone.transform.localScale.y * coneScale);
             cone.GetComponent<ConeSelect>().coneNumber = c;
+            if (scoopScale !=1) cone.transform.parent = orderboard.transform;
             //Debug.Log(temp);
+            coneCollection.Push(cone);
 
            // Debug.Log("Cone " + c.ToString() + " has " + layoutData[c].Count);
             
@@ -265,7 +397,7 @@ public class GameControl : MonoBehaviour {
                 scoop.GetComponent<IceCream>().setFlavour("F" + flavour);
                 scoop.transform.localScale = new Vector2(scoop.transform.localScale.x*scoopScale, scoop.transform.localScale.y * scoopScale);
                 scoop.GetComponent<IceCream>().coneLocation = c;
-
+                if (scoopScale != 1) scoop.transform.parent = orderboard.transform;
                 layout[c].Push(scoop);
                 //For the top scoop
                 if (layout[c].Count ==  layoutData[c].Count && coneScale == 1)
@@ -289,8 +421,22 @@ public class GameControl : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
-	
-	}
+
+        if (isTimerActive)
+        {
+            amtTimeLeft -= Time.deltaTime;
+            timeBar.transform.localScale = new Vector2(timerGraphicFullScale*(amtTimeLeft/maxtime), timeBar.transform.localScale.y);
+            
+            if (amtTimeLeft <=0)
+            {
+                gameOverAlert.SetActive(true);
+                isGameOver = true;
+                isTimerActive = false;
+            }
+        }
+      
+        
+    }
 
     void parseOrder(string order, Stack<int>[] layout)
     {
@@ -324,6 +470,7 @@ public class GameControl : MonoBehaviour {
     string GetNextOrder()
     {
         // Debug.Log("Getting next order");
+
         string[] orders =
          new string[]
          {

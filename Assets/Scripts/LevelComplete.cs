@@ -18,6 +18,11 @@ public class LevelComplete : MonoBehaviour {
     private void OnMouseDown()
     {
         if (GameControl.instance.isGameOver)
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        {
+            GameControl.instance.isGameOver = true;
+            //  SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+           // GameControl.instance.nextOrder();
+
+        }
     }
 }
